@@ -5,6 +5,8 @@ Desarrolla una herramienta para que los usuarios puedan almacenar y gestionar su
 ## Equipo de desarrollo
 | Apellidos y nombres | Roll |
 |---------------------|------|
-| Torres Inche Ulises Yerko      |      el jajas |
-| Tapia De La Cruz Jhann Pier    |      leder    |
-|Cajamarca Areche Reynaldo Elías |   Deshotzzz   |
+| Torres Inche Ulises Yerko       |     el jajas |
+| Tapia De La Cruz Jhann Pier     |     leder    |
+| Cajamarca Areche Reynaldo Elías |   Deshotzzz  |
+| Flores Taipe, Javier Paul       |--------------|
+| baldeon martinez david          |--------------|
