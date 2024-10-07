@@ -5,7 +5,7 @@ Desarrolla una herramienta para que los usuarios puedan almacenar y gestionar su
 ## Equipo de desarrollo
 | Apellidos y nombres | Rol |
 |---------------------|------|
-|   Baldeon martinez david            | Desarrollador Frontend |
+|   Baldeón Martínez david            | Desarrollador Frontend |
 |   Cajamarca Areche Reynaldo Elías   |   DevOps |
 |   Cavero Ayzana Aldheyr Mitsui  |  Scrum Master |
 |   Flores Taipe, Javier Paul         |  Tester/QA|
