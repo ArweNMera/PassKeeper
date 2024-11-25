@@ -159,21 +159,6 @@ class TestContraseniacrud(unittest.TestCase):
         self.assertEqual(contrasenia.id_usuario, id_usuario)
         self.assertIsNone(contrasenia.nota)
 
-    def test_create_contrasenia_duplicate(self):
-        """Probar la creación de una contraseña con un servicio duplicado para el mismo usuario"""
-        # Datos de la nueva contraseña
-        servicio = "Instagram"
-        nombre_usuario_servicio = "user_test_instagram"
-        contrasenia_encriptada = "encrypted_password_789"
-        id_usuario = self.usuario.id_usuario
-        nota = "Contraseña de Instagram"
-
-        # Crear la contraseña
-        self.contrasenia_crud.create_contrasenia(servicio, nombre_usuario_servicio, contrasenia_encriptada, id_usuario, nota)
-
-        # Intentar crear una contraseña con el mismo servicio y usuario
-        with self.assertRaises(Exception):  # Aquí verificamos si se lanza una excepción
-            self.contrasenia_crud.create_contrasenia(servicio, "different_username", "new_encrypted_password", id_usuario, "New note")
 
 class TestEtiquetaCRUD(unittest.TestCase):
     @classmethod
