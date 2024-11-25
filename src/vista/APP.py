@@ -48,7 +48,7 @@ class GestionContrasenasWindow:
         tk.Button(frame_botones, text="Eliminar").pack(side="left", padx=10)
 
     def run(self):
-        """Método para iniciar el bucle principal."""
+
         self.root.mainloop()
 
 
