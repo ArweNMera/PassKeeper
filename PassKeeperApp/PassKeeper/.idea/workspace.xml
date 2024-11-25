@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea7b6a7f-0725-4352-a2f8-20ab5029d71f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/logica/CRUD.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/modelo/modelo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/vista/APP.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_CRUD.py" afterDir="false" />
-    </list>
+    <list default="true" id="ea7b6a7f-0725-4352-a2f8-20ab5029d71f" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,8 +18,20 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "DorianVritaski"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ArweNMera/PassKeeper.git",
+    "accountId": "83e0d32a-d9ef-4ca6-80fa-5aa65c4e02da"
+  }
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 5
 }]]></component>
@@ -41,7 +48,7 @@
     "Python tests.Python tests in test_CRUD.py.executor": "Run",
     "Python.APP.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true"
   }
 }]]></component>
