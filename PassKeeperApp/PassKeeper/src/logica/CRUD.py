@@ -2,10 +2,18 @@
 from sqlalchemy.exc import IntegrityError
 #from sqlalchemy.orm import Session
 #from datetime import datetime
-from src.modelo.modelo import Usuario, engine, Sesion, Etiqueta, ContraseniaEtiqueta
+from src.modelo.modelo import Usuario, Sesion, Etiqueta, ContraseniaEtiqueta
 #from src.config import sessionmaker
 from datetime import datetime
 from src.modelo.modelo import Contrasenia  # Asegúrate de importar correctamente el modelo Contrasenia
+import socket
+
+
+def obtener_ip():
+    # Obtener la dirección IP local
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
 
 class UsuarioCRUD:
     def __init__(self, session):
@@ -27,13 +35,16 @@ class UsuarioCRUD:
             self.session.rollback()  # Rollback en caso de error (por ejemplo, email duplicado)
             raise Exception("El email ya está registrado.")
 
+
     def iniciar_sesion(self, email, password_hash):
         """Iniciar sesión con un usuario basado en el correo y la contraseña proporcionados"""
         usuario = self.session.query(Usuario).filter_by(email=email).first()
         if usuario and usuario.password_hash == password_hash:
-            # Aquí podrías hacer cualquier lógica adicional, como registrar la sesión
-            # Crear una sesión para el usuario
-            sesion = Sesion(id_usuario=usuario.id_usuario, fecha_inicio=datetime.now())
+            # Obtener la dirección IP
+            ip = obtener_ip()  # Llamamos a la función para obtener la IP
+
+            # Crear una sesión para el usuario, incluyendo la IP
+            sesion = Sesion(id_usuario=usuario.id_usuario, fecha_inicio=datetime.now(), ip=ip)
             self.session.add(sesion)
             self.session.commit()
             return sesion  # Retornar la sesión creada
@@ -78,18 +89,6 @@ class UsuarioCRUD:
             self.session.commit()
         return usuario
 
-    def cerrar_sesion(self, id_sesion):
-        """Cerrar sesión de un usuario"""
-        # Buscar la sesión por su ID
-        sesion = self.session.query(Sesion).filter_by(id_sesion=id_sesion).first()
-        if sesion:
-            # Establecer la fecha de cierre de la sesión
-            sesion.fecha_fin = datetime.now()
-            self.session.commit()
-            return sesion
-        else:
-            raise Exception("Sesión no encontrada")
-
 class Contraseniacrud:
     def __init__(self, session):
         self.session = session
@@ -119,16 +118,23 @@ class Contraseniacrud:
         """Obtener todas las contraseñas asociadas a un usuario"""
         return self.session.query(Contrasenia).filter_by(id_usuario=id_usuario).all()
 
-    def editar_contrasena(self, id_contrasenia, contrasenia_encriptada=None, nota=None):
+    def editar_contrasena(
+            self, id_contrasenia, contrasenia_encriptada=None, nota=None, servicio=None, usuario=None
+    ):
         """Actualizar los campos de una contrasenia"""
         contrasenia = self.session.query(Contrasenia).filter_by(id_contrasenia=id_contrasenia).first()
         if not contrasenia:
             raise Exception("La contraseña no existe")
 
+        # Actualizar los campos solo si se proporcionan nuevos valores
         if contrasenia_encriptada:
             contrasenia.contrasenia_encriptada = contrasenia_encriptada
         if nota:
             contrasenia.nota = nota
+        if servicio:
+            contrasenia.servicio = servicio
+        if usuario:
+            contrasenia.usuario = usuario
 
         contrasenia.ultima_modificacion = datetime.now()
         self.session.commit()
@@ -194,19 +200,26 @@ class SesionCRUD:
         self.session = session
 
     def create_sesion(self, id_usuario, ip):
+        """Crear una nueva sesión para un usuario con la dirección IP"""
         sesion = Sesion(
             id_usuario=id_usuario,
             fecha_inicio=datetime.now(),
-            ip=ip
+            ip=ip  # Guardar la IP aquí
         )
         self.session.add(sesion)
         self.session.commit()
         return sesion
 
     def get_sesion(self, id_sesion):
+        """
+        Obtener una sesión específica por su ID.
+        """
         return self.session.query(Sesion).filter(Sesion.id_sesion == id_sesion).first()
 
     def update_sesion(self, id_sesion, **kwargs):
+        """
+        Actualizar una sesión existente con los valores proporcionados.
+        """
         sesion = self.get_sesion(id_sesion)
         if sesion:
             for key, value in kwargs.items():
@@ -215,11 +228,36 @@ class SesionCRUD:
         return sesion
 
     def delete_sesion(self, id_sesion):
+        """
+        Eliminar una sesión por su ID.
+        """
         sesion = self.get_sesion(id_sesion)
         if sesion:
             self.session.delete(sesion)
             self.session.commit()
         return sesion
+
+    def cerrar_sesion(self, id_usuario, ip=None):
+        """
+        Cerrar la sesión activa de un usuario, actualizando la dirección IP si se proporciona.
+        """
+        # Buscar la sesión más reciente del usuario que no tenga fecha_fin
+        sesion = (
+            self.session.query(Sesion)
+            .filter_by(id_usuario=id_usuario, fecha_fin=None)
+            .order_by(Sesion.fecha_inicio.desc())
+            .first()
+        )
+        if sesion:
+            # Actualizar la dirección IP si se proporciona
+            if ip:
+                sesion.ip = ip
+            # Establecer la fecha de cierre
+            sesion.fecha_fin = datetime.now()
+            self.session.commit()
+            return sesion  # Retornar la sesión actualizada
+        else:
+            raise Exception("No se encontró una sesión activa para este usuario")
 
 class ContraseniaEtiquetaCRUD:
     def __init__(self, session):

@@ -69,26 +69,7 @@ class TestUsuarioCRUD(unittest.TestCase):
         self.assertIsNotNone(session)
         self.assertEqual(session.id_usuario, usuario.id_usuario)
 
-    def test_cerrar_sesion(self):
-        """Probar el cierre de sesión"""
-        # Crear un usuario
-        nombre_usuario = "user_test"
-        email = "user_test@example.com"
-        password_hash = "hashed_password"
-        rol = "user"
 
-        usuario = self.usuario_crud.create_usuario(nombre_usuario, email, password_hash, rol)
-
-        # Iniciar sesión
-        session = self.usuario_crud.iniciar_sesion(email, password_hash)
-
-        # Cerrar sesión
-        self.usuario_crud.cerrar_sesion(session.id_sesion)
-
-        # Verificar que la sesión fue cerrada
-        session_cerrada = self.session.query(Sesion).filter_by(id_sesion=session.id_sesion).first()
-        self.assertIsNotNone(session_cerrada.fecha_fin)
-        self.assertIsInstance(session_cerrada.fecha_fin, datetime)  # Verificar que fecha_fin es una instancia de datetime
 class TestContraseniacrud(unittest.TestCase):
     def setUp(self):
         """Configuración antes de cada prueba"""
@@ -295,6 +276,27 @@ class TestSesionCRUD(unittest.TestCase):
         # Verificar que la sesión fue eliminada
         self.assertEqual(deleted_sesion.id_sesion, sesion.id_sesion)
         self.assertIsNone(self.sesion_crud.get_sesion(sesion.id_sesion))
+
+    def test_cerrar_sesion(self):
+        """Probar el cierre de sesión"""
+        # Crear una sesión para el usuario
+        ip = "192.168.1.1"
+        sesion = self.sesion_crud.create_sesion(self.usuario.id_usuario, ip)
+
+        # Verificar que la sesión fue creada
+        self.assertIsNotNone(sesion)
+        self.assertEqual(sesion.id_usuario, self.usuario.id_usuario)
+        self.assertEqual(sesion.ip, ip)
+        self.assertIsInstance(sesion.fecha_inicio, datetime)
+
+        # Cerrar sesión (esto depende de cómo hayas implementado el cierre de sesión en tu CRUD)
+        self.sesion_crud.cerrar_sesion(sesion.id_sesion)
+
+        # Verificar que la sesión fue cerrada
+        session_cerrada = self.session.query(Sesion).filter_by(id_sesion=sesion.id_sesion).first()
+        self.assertIsNotNone(session_cerrada.fecha_fin)
+        self.assertIsInstance(session_cerrada.fecha_fin, datetime)
+    # Verificar que fecha_fin es una instancia de datetime
 
 class TestContraseniaEtiquetaCRUD(unittest.TestCase):
     def setUp(self):

@@ -2,82 +2,110 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from sqlalchemy.orm import sessionmaker
 from src.modelo.modelo import engine
-from src.logica.CRUD import UsuarioCRUD, Contraseniacrud
-from datetime import datetime
+from src.logica.CRUD import UsuarioCRUD, Contraseniacrud, SesionCRUD
+
+#from datetime import datetime
 import random
 import string
-
 
 # Configurar sesión de SQLAlchemy
 Session = sessionmaker(bind=engine)
 session = Session()
 usuario_crud = UsuarioCRUD(session)
 contrasenia_crud = Contraseniacrud(session)
-
+cerrar_sesion = SesionCRUD(session)
 
 def generar_contrasena(longitud=12):
     """Genera una contraseña aleatoria."""
     caracteres = string.ascii_letters + string.digits + "!@#$%^&*()-_=+"
     return ''.join(random.choice(caracteres) for _ in range(longitud))
 
-
 class LoginWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("Inicio de Sesión")
-        self.root.geometry("400x300")
+        self.root.geometry("700x700")  # Tamaño más grande
         self.root.resizable(False, False)
-        self.root.configure(bg="#85929e")  # Fondo claro
+        self.root.configure(bg="#1d1f27")  # Fondo oscuro
+
+        # Estilo para la fuente
+        font_style = ("Segoe UI", 14)
 
         # Encabezado
         self.header = tk.Label(
             root,
             text="Bienvenido",
-            font=("Arial", 16, "bold"),
-            bg="#f0f0f5",
-            fg="#333",
+            font=("Segoe UI", 32, "bold"),
+            fg="#00d4b5",  # Color futurista
+            bg="#1d1f27",
+            pady=20
         )
-        self.header.pack(pady=10)
+        self.header.pack(pady=20)
 
         # Marco para el formulario
-        self.frame_form = tk.Frame(root, bg="#ffffff", bd=2, relief="solid")
-        self.frame_form.pack(pady=10, padx=20, fill="both", expand=True)
+        self.frame_form = tk.Frame(root, bg="#2b2f3d", bd=5, relief="solid", padx=30, pady=30)
+        self.frame_form.pack(pady=20, padx=30, fill="both", expand=True)
+        self.frame_form.config(bg="#2b2f3d")
 
         # Etiquetas y campos de entrada
         self.label_email = tk.Label(
-            self.frame_form, text="Correo Electrónico:", font=("Arial", 10), bg="#ffffff"
+            self.frame_form,
+            text="Correo Electrónico:",
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_email.pack(pady=5, anchor="w")
-        self.entry_email = ttk.Entry(self.frame_form, width=35)
-        self.entry_email.pack(pady=5)
+        self.label_email.pack(pady=10, anchor="w")
+        self.entry_email = ttk.Entry(self.frame_form, width=40, font=("Segoe UI", 12))
+        self.entry_email.pack(pady=10, ipadx=5, ipady=5)
 
         self.label_password = tk.Label(
-            self.frame_form, text="Contraseña:", font=("Arial", 10), bg="#ffffff"
+            self.frame_form,
+            text="Contraseña:",
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_password.pack(pady=5, anchor="w")
-        self.entry_password = ttk.Entry(self.frame_form, width=35, show="*")
-        self.entry_password.pack(pady=5)
+        self.label_password.pack(pady=10, anchor="w")
+        self.entry_password = ttk.Entry(self.frame_form, width=40, font=("Segoe UI", 12), show="*")
+        self.entry_password.pack(pady=10, ipadx=5, ipady=5)
 
-        # Botones
+        # Botones con estilo futurista
+        style = ttk.Style()
+        style.configure("futuristic.TButton",
+                        background="#00d4b5",
+                        foreground="#1d1f27",
+                        font=("Segoe UI", 12, "bold"),
+                        relief="flat",
+                        padding=10)
+        style.map("futuristic.TButton",
+                  background=[("active", "#009e8b"), ("disabled", "#444444")])
+
         self.button_login = ttk.Button(
-            self.frame_form, text="Iniciar Sesión", command=self.login
+            self.frame_form,
+            text="Iniciar Sesión",
+            command=self.login,
+            style="futuristic.TButton"
         )
-        self.button_login.pack(pady=10, fill="x", padx=20)
+        self.button_login.pack(pady=15, fill="x", padx=20)
 
         self.button_register = ttk.Button(
-            self.frame_form, text="Crear Usuario", command=self.open_register_window
+            self.frame_form,
+            text="Crear Usuario",
+            command=self.open_register_window,
+            style="futuristic.TButton"
         )
-        self.button_register.pack(pady=5, fill="x", padx=20)
+        self.button_register.pack(pady=10, fill="x", padx=20)
 
         # Pie de página
         self.footer = tk.Label(
             root,
-            text="© 2024 - Tu Aplicación",
-            font=("Arial", 8),
-            bg="#f0f0f5",
-            fg="#888",
+            text="© 2024 - PassKeeper. All rights reserved.",
+            font=("Segoe UI", 10),
+            bg="#1d1f27",
+            fg="#888888",
         )
-        self.footer.pack(pady=10)
+        self.footer.pack(pady=20)
 
     def login(self):
         email = self.entry_email.get()
@@ -105,83 +133,105 @@ class RegisterWindow:
     def __init__(self, parent):
         self.window = tk.Toplevel(parent)
         self.window.title("Registrar Usuario")
-        self.window.geometry("400x450")
+        self.window.geometry("600x850")  # Tamaño más grande
         self.window.resizable(False, False)
-        self.window.configure(bg="#85929e")  # Fondo de la ventana
+        self.window.configure(bg="#1d1f27")  # Fondo oscuro
+
+        # Estilo para la fuente
+        font_style = ("Segoe UI", 14)
 
         # Encabezado
         self.label_title = tk.Label(
             self.window,
             text="Registro de Usuario",
-            font=("Helvetica", 16, "bold"),
-            bg="#f5f5f5",
-            fg="#333333"
+            font=("Segoe UI", 32, "bold"),
+            fg="#00d4b5",  # Color futurista
+            bg="#1d1f27",
+            pady=20
         )
-        self.label_title.pack(pady=15)
+        self.label_title.pack(pady=20)
 
         # Marco del formulario
-        self.form_frame = tk.Frame(self.window, bg="#ffffff", bd=2, relief="groove")
-        self.form_frame.pack(padx=20, pady=10, fill="both", expand=True)
+        self.form_frame = tk.Frame(self.window, bg="#2b2f3d", bd=5, relief="solid", padx=30, pady=30)
+        self.form_frame.pack(padx=30, pady=20, fill="both", expand=True)
+        self.form_frame.config(bg="#2b2f3d")
 
         # Campo: Nombre de Usuario
         self.label_username = tk.Label(
             self.form_frame,
             text="Nombre de Usuario:",
-            font=("Helvetica", 10),
-            bg="#ffffff"
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_username.pack(pady=5, anchor="w", padx=10)
-        self.entry_username = ttk.Entry(self.form_frame, width=30)
-        self.entry_username.pack(pady=5, padx=10)
+        self.label_username.pack(pady=10, anchor="w")
+        self.entry_username = ttk.Entry(self.form_frame, width=40, font=("Segoe UI", 12))
+        self.entry_username.pack(pady=10, ipadx=5, ipady=5)
 
         # Campo: Correo Electrónico
         self.label_email = tk.Label(
             self.form_frame,
             text="Correo Electrónico:",
-            font=("Helvetica", 10),
-            bg="#ffffff"
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_email.pack(pady=5, anchor="w", padx=10)
-        self.entry_email = ttk.Entry(self.form_frame, width=30)
-        self.entry_email.pack(pady=5, padx=10)
+        self.label_email.pack(pady=10, anchor="w")
+        self.entry_email = ttk.Entry(self.form_frame, width=40, font=("Segoe UI", 12))
+        self.entry_email.pack(pady=10, ipadx=5, ipady=5)
 
         # Campo: Contraseña
         self.label_password = tk.Label(
             self.form_frame,
             text="Contraseña:",
-            font=("Helvetica", 10),
-            bg="#ffffff"
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_password.pack(pady=5, anchor="w", padx=10)
-        self.entry_password = ttk.Entry(self.form_frame, width=30, show="*")
-        self.entry_password.pack(pady=5, padx=10)
+        self.label_password.pack(pady=10, anchor="w")
+        self.entry_password = ttk.Entry(self.form_frame, width=40, font=("Segoe UI", 12), show="*")
+        self.entry_password.pack(pady=10, ipadx=5, ipady=5)
 
         # Botón: Generar Contraseña
         self.button_generate_password = ttk.Button(
             self.form_frame,
             text="Generar Contraseña",
-            command=self.generate_password
+            command=self.generate_password,
+            style="futuristic.TButton"
         )
-        self.button_generate_password.pack(pady=5, padx=10)
+        self.button_generate_password.pack(pady=10, padx=10)
 
         # Campo: Rol
         self.label_rol = tk.Label(
             self.form_frame,
             text="Rol (admin, usuario):",
-            font=("Helvetica", 10),
-            bg="#ffffff"
+            font=font_style,
+            fg="#ffffff",
+            bg="#2b2f3d"
         )
-        self.label_rol.pack(pady=5, anchor="w", padx=10)
-        self.entry_rol = ttk.Entry(self.form_frame, width=30)
-        self.entry_rol.pack(pady=5, padx=10)
+        self.label_rol.pack(pady=10, anchor="w")
+        self.entry_rol = ttk.Entry(self.form_frame, width=40, font=("Segoe UI", 12))
+        self.entry_rol.pack(pady=10, ipadx=5, ipady=5)
 
         # Botón: Registrar
         self.button_register = ttk.Button(
             self.form_frame,
             text="Registrar",
-            command=self.register_user
+            command=self.register_user,
+            style="futuristic.TButton"
         )
-        self.button_register.pack(pady=15, padx=10)
+        self.button_register.pack(pady=20, padx=10)
+
+        # Estilo para los botones
+        style = ttk.Style()
+        style.configure("futuristic.TButton",
+                        background="#00d4b5",
+                        foreground="#1d1f27",
+                        font=("Segoe UI", 12, "bold"),
+                        relief="flat",
+                        padding=10)
+        style.map("futuristic.TButton",
+                  background=[("active", "#009e8b"), ("disabled", "#444444")])
 
     def generate_password(self):
         """Genera una contraseña aleatoria y la coloca en el campo de entrada."""
@@ -207,14 +257,14 @@ class RegisterWindow:
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo registrar el usuario: {e}")
 
-
-
 class GestionContrasenasWindow:
     def __init__(self, usuario_id):
+        self.SesionCRUD = SesionCRUD(session)
+        self.Contraseniacrud = Contraseniacrud(session)
         self.usuario_id = usuario_id  # Recibe el id del usuario
         self.root = tk.Tk()
         self.root.title("Gestión de Contraseñas")
-        self.root.geometry("800x400")  # Ajusté el tamaño para más espacio
+        self.root.geometry("1200x400")  # Ajusté el tamaño para más espacio
 
         # Tabla de contraseñas
         self.tree = ttk.Treeview(self.root, columns=(
@@ -237,7 +287,7 @@ class GestionContrasenasWindow:
         self.tree.column("Contraseña Encriptada", width=150)
         self.tree.column("Fecha de Creación", width=150)
         self.tree.column("Última Modificación", width=150)
-        self.tree.column("Nota", width=200)
+        self.tree.column("Nota", width=300)
 
         # Mostrar la tabla
         self.tree.pack(fill="both", expand=True)
@@ -250,10 +300,25 @@ class GestionContrasenasWindow:
         tk.Button(frame_botones, text="Editar", command=self.editar_contrasena).pack(side="left", padx=10)
         tk.Button(frame_botones, text="Eliminar", command=self.eliminar_contrasena).pack(side="left", padx=10)
 
+        # Botón Cerrar sesión
+        tk.Button(frame_botones, text="Cerrar sesión", command=self.cerrar_sesion).pack(side="left", padx=10)
+
         # Cargar contraseñas
         self.cargar_contrasenas()
 
         self.root.mainloop()
+
+    def cerrar_sesion(self):
+        """Cerrar la sesión desde la interfaz gráfica."""
+        respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea cerrar sesión?")
+        if respuesta:
+            try:
+                # Llama al método de CRUD para cerrar la sesión en la base de datos
+                self.SesionCRUD.cerrar_sesion(self.usuario_id)
+                messagebox.showinfo("Éxito", "Sesión cerrada correctamente.")
+                self.root.destroy()  # Cierra la ventana de la aplicación
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
     def cargar_contrasenas(self):
         """Carga las contraseñas del usuario desde la base de datos"""
@@ -331,8 +396,68 @@ class GestionContrasenasWindow:
         pass
 
     def editar_contrasena(self):
-        # Implementar ventana para editar contraseña seleccionada
-        pass
+        # Verificar si hay una contraseña seleccionada
+        seleccion = self.tree.focus()  # Obtener la selección en la tabla
+        if not seleccion:
+            messagebox.showwarning("Advertencia", "Por favor, seleccione una contraseña para editar.")
+            return
+
+        # Obtener los datos de la contraseña seleccionada
+        item_seleccionado = self.tree.item(seleccion)
+        contrasena_id = item_seleccionado["values"][0]  # Suponiendo que el ID es la primera columna
+        servicio_actual = item_seleccionado["values"][1]  # Servicio actual
+        usuario_actual = item_seleccionado["values"][2]  # Usuario del servicio actual
+        contrasena_actual = item_seleccionado["values"][3]  # Contraseña (encriptada o no)
+        nota_actual = item_seleccionado["values"][6]  # Nota actual
+
+        # Crear una nueva ventana para editar la contraseña
+        ventana_editar = tk.Toplevel(self.root)
+        ventana_editar.title("Editar Contraseña")
+        ventana_editar.geometry("400x400")
+
+        # Función para guardar los cambios
+        def guardar_contrasena():
+            # Obtener los datos ingresados por el usuario
+            servicio = entry_servicio.get()
+            nombre_usuario_servicio = entry_usuario.get()
+            contrasenia = entry_contrasenia.get()  # Aquí obtienes la contraseña nueva (puedes encriptarla si es necesario)
+            nota = text_nota.get("1.0", tk.END).strip()
+
+            try:
+                # Llamar al método editar_contrasenia en CRUD
+                self.Contraseniacrud.editar_contrasena(
+                    contrasena_id, contrasenia_encriptada=contrasenia, nota=nota
+                )
+                messagebox.showinfo("Éxito", "La contraseña ha sido editada correctamente.")
+                self.cargar_contrasenas()  # Refrescar la tabla después de editar
+                ventana_editar.destroy()  # Cerrar la ventana de edición
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo editar la contraseña: {e}")
+
+        # Campos de entrada para editar la contraseña
+        tk.Label(ventana_editar, text="Servicio:").pack(pady=5)
+        entry_servicio = tk.Entry(ventana_editar, width=30)
+        entry_servicio.insert(0, servicio_actual)  # Insertar el valor actual
+        entry_servicio.pack(pady=5)
+
+        tk.Label(ventana_editar, text="Usuario del Servicio:").pack(pady=5)
+        entry_usuario = tk.Entry(ventana_editar, width=30)
+        entry_usuario.insert(0, usuario_actual)  # Insertar el valor actual
+        entry_usuario.pack(pady=5)
+
+        tk.Label(ventana_editar, text="Contraseña:").pack(pady=5)
+        entry_contrasenia = tk.Entry(ventana_editar, width=30, show="*")
+        entry_contrasenia.insert(0, contrasena_actual)  # Inserta la contraseña actual (encriptada o no)
+        entry_contrasenia.pack(pady=5)
+
+        tk.Label(ventana_editar, text="Nota (opcional):").pack(pady=5)
+        text_nota = tk.Text(ventana_editar, height=5, width=40)
+        text_nota.insert(tk.END, nota_actual)  # Insertar la nota actual
+        text_nota.pack(pady=5)
+
+        # Botón para guardar
+        tk.Button(ventana_editar, text="Guardar", command=guardar_contrasena).pack(pady=10)
+
 
     def eliminar_contrasena(self):
         try:
@@ -363,8 +488,6 @@ class GestionContrasenasWindow:
         except Exception as e:
             messagebox.showerror("Error", f"Hubo un problema al intentar eliminar la contraseña: {e}")
             pass
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()
