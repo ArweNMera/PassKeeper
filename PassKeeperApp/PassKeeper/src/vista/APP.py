@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 from sqlalchemy.orm import sessionmaker
-from src.modelo.modelo import engine
+from src.modelo.modelo import engine, Etiqueta, Usuario
 from src.logica.CRUD import UsuarioCRUD, Contraseniacrud, SesionCRUD
 
 #from datetime import datetime
@@ -259,17 +259,21 @@ class RegisterWindow:
 
 class GestionContrasenasWindow:
     def __init__(self, usuario_id):
+        self.session = session
         self.SesionCRUD = SesionCRUD(session)
         self.Contraseniacrud = Contraseniacrud(session)
         self.usuario_id = usuario_id  # Recibe el id del usuario
         self.root = tk.Tk()
         self.root.title("Gestión de Contraseñas")
-        self.root.geometry("1200x400")  # Ajusté el tamaño para más espacio
+        self.root.geometry("1200x400")
+
+        # Obtener el usuario desde la base de datos
+        self.usuario = self.session.query(Usuario).filter_by(id_usuario=usuario_id).first()
 
         # Tabla de contraseñas
         self.tree = ttk.Treeview(self.root, columns=(
             "ID", "Servicio", "Usuario", "Contraseña Encriptada", "Fecha de Creación", "Última Modificación", "Nota"),
-                                 show="headings")
+            show="headings")
 
         # Definir encabezados de las columnas
         self.tree.heading("ID", text="ID")
@@ -287,7 +291,7 @@ class GestionContrasenasWindow:
         self.tree.column("Contraseña Encriptada", width=150)
         self.tree.column("Fecha de Creación", width=150)
         self.tree.column("Última Modificación", width=150)
-        self.tree.column("Nota", width=300)
+        self.tree.column("Nota", width=200)
 
         # Mostrar la tabla
         self.tree.pack(fill="both", expand=True)
@@ -296,17 +300,53 @@ class GestionContrasenasWindow:
         frame_botones = tk.Frame(self.root)
         frame_botones.pack()
 
+        # Verificar si el usuario es admin
+        if self.usuario.rol == "admin":
+            # Si el usuario es admin, habilitar el botón de "Ver Usuarios"
+            self.boton_ver_usuarios = tk.Button(frame_botones, text="Ver Usuarios", command=self.mostrar_usuarios)
+            self.boton_ver_usuarios.pack(side="left", padx=10)
+        else:
+            # Si no es admin, deshabilitar el botón
+            self.boton_ver_usuarios = tk.Button(frame_botones, text="Ver Usuarios", state="disabled")
+            self.boton_ver_usuarios.pack(side="left", padx=10)
+
         tk.Button(frame_botones, text="Agregar", command=self.agregar_contrasena).pack(side="left", padx=10)
         tk.Button(frame_botones, text="Editar", command=self.editar_contrasena).pack(side="left", padx=10)
         tk.Button(frame_botones, text="Eliminar", command=self.eliminar_contrasena).pack(side="left", padx=10)
-
-        # Botón Cerrar sesión
         tk.Button(frame_botones, text="Cerrar sesión", command=self.cerrar_sesion).pack(side="left", padx=10)
 
         # Cargar contraseñas
         self.cargar_contrasenas()
 
         self.root.mainloop()
+
+    def mostrar_usuarios(self):
+        """Muestra una ventana con la lista de usuarios."""
+        # Crear una nueva ventana para mostrar los usuarios
+        ventana_usuarios = tk.Toplevel(self.root)
+        ventana_usuarios.title("Usuarios Registrados")
+        ventana_usuarios.geometry("600x300")
+
+        # Crear una tabla para mostrar los usuarios
+        tree_usuarios = ttk.Treeview(ventana_usuarios, columns=("ID", "Nombre de Usuario", "Rol"), show="headings")
+        tree_usuarios.heading("ID", text="ID")
+        tree_usuarios.heading("Nombre de Usuario", text="Nombre de Usuario")
+        tree_usuarios.heading("Rol", text="Rol")
+
+        # Ajustar el ancho de las columnas
+        tree_usuarios.column("ID", width=50)
+        tree_usuarios.column("Nombre de Usuario", width=200)
+        tree_usuarios.column("Rol", width=100)
+
+        # Cargar los usuarios desde la base de datos
+        usuarios = self.session.query(Usuario).all()
+
+        # Insertar los datos de los usuarios en la tabla
+        for usuario in usuarios:
+            tree_usuarios.insert("", "end", values=(usuario.id_usuario, usuario.nombre_usuario, usuario.rol))
+
+        # Mostrar la tabla
+        tree_usuarios.pack(fill="both", expand=True)
 
     def cerrar_sesion(self):
         """Cerrar la sesión desde la interfaz gráfica."""
@@ -343,26 +383,43 @@ class GestionContrasenasWindow:
                 contrasenia.nota or ""  # Nota (si no hay nota, colocar vacío)
             ))
 
+
     def agregar_contrasena(self):
         def guardar_contrasena():
-            servicio = entry_servicio.get()
-            nombre_usuario_servicio = entry_usuario.get()
-            contrasenia = entry_contrasenia.get()
+            servicio = entry_servicio.get().strip()
+            nombre_usuario_servicio = entry_usuario.get().strip()
+            contrasenia = entry_contrasenia.get().strip()
             nota = text_nota.get("1.0", tk.END).strip()
 
             if not servicio or not nombre_usuario_servicio or not contrasenia:
                 messagebox.showwarning("Advertencia", "Por favor, complete todos los campos obligatorios.")
                 return
 
+            # Obtener las etiquetas seleccionadas
+            etiquetas_seleccionadas = combo_etiquetas.get().strip()
+            if etiquetas_seleccionadas:
+                etiquetas_lista = etiquetas_seleccionadas.split(",")  # Separar si son múltiples etiquetas
+            else:
+                etiquetas_lista = []
+
             try:
                 # Crear la nueva contraseña en la base de datos
-                contrasenia_crud.create_contrasenia(
+                contrasenia_obj = contrasenia_crud.create_contrasenia(
                     id_usuario=self.usuario_id,
                     servicio=servicio,
                     nombre_usuario_servicio=nombre_usuario_servicio,
                     contrasenia_encriptada=contrasenia,  # Aquí deberías encriptar la contraseña
                     nota=nota
                 )
+
+                # Asociar las etiquetas seleccionadas a la nueva contraseña
+                for etiqueta in etiquetas_lista:
+                    etiqueta_obj = self.session.query(Etiqueta).filter_by(nombre=etiqueta).first()
+                    if etiqueta_obj:
+                        contrasenia_obj.etiquetas.append(etiqueta_obj)
+
+                self.session.commit()
+
                 messagebox.showinfo("Éxito", "Contraseña agregada correctamente.")
                 self.cargar_contrasenas()
                 ventana_agregar.destroy()
@@ -372,7 +429,7 @@ class GestionContrasenasWindow:
         # Crear una nueva ventana para añadir una contraseña
         ventana_agregar = tk.Toplevel(self.root)
         ventana_agregar.title("Agregar Contraseña")
-        ventana_agregar.geometry("400x400")
+        ventana_agregar.geometry("400x500")
 
         # Campos de entrada
         tk.Label(ventana_agregar, text="Servicio:").pack(pady=5)
@@ -391,9 +448,15 @@ class GestionContrasenasWindow:
         text_nota = tk.Text(ventana_agregar, height=5, width=40)
         text_nota.pack(pady=5)
 
+        # ComboBox para seleccionar etiquetas
+        tk.Label(ventana_agregar, text="Etiquetas:").pack(pady=5)
+        combo_etiquetas = ttk.Combobox(ventana_agregar, width=30)
+        etiquetas = self.session.query(Etiqueta).all()  # Cargar etiquetas desde la base de datos
+        combo_etiquetas['values'] = [etiqueta.nombre for etiqueta in etiquetas]  # Mostrar nombres de etiquetas
+        combo_etiquetas.pack(pady=5)
+
         # Botón para guardar
         tk.Button(ventana_agregar, text="Guardar", command=guardar_contrasena).pack(pady=10)
-        pass
 
     def editar_contrasena(self):
         # Verificar si hay una contraseña seleccionada
@@ -418,15 +481,20 @@ class GestionContrasenasWindow:
         # Función para guardar los cambios
         def guardar_contrasena():
             # Obtener los datos ingresados por el usuario
-            servicio = entry_servicio.get()
-            nombre_usuario_servicio = entry_usuario.get()
-            contrasenia = entry_contrasenia.get()  # Aquí obtienes la contraseña nueva (puedes encriptarla si es necesario)
+            servicio = entry_servicio.get().strip()
+            nombre_usuario_servicio = entry_usuario.get().strip()
+            contrasenia = entry_contrasenia.get().strip()  # Aquí obtienes la contraseña nueva
             nota = text_nota.get("1.0", tk.END).strip()
+
+            if not servicio or not nombre_usuario_servicio or not contrasenia:
+                messagebox.showerror("Error", "Por favor, complete todos los campos obligatorios.")
+                return
 
             try:
                 # Llamar al método editar_contrasenia en CRUD
                 self.Contraseniacrud.editar_contrasena(
-                    contrasena_id, contrasenia_encriptada=contrasenia, nota=nota
+                    contrasena_id, contrasenia_encriptada=contrasenia, nota=nota,
+                    servicio=servicio, usuario=nombre_usuario_servicio
                 )
                 messagebox.showinfo("Éxito", "La contraseña ha sido editada correctamente.")
                 self.cargar_contrasenas()  # Refrescar la tabla después de editar

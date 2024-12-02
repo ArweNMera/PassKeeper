@@ -53,7 +53,7 @@
     &quot;last_opened_file_path&quot;: &quot;D:/poryectoFinal/PassKeeper/PassKeeperApp/PassKeeper&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python tests.Python tests in test_CRUD.py">
+  <component name="RunManager" selected="Python.APP">
     <configuration name="APP" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PassKeeper" />
       <option name="ENV_FILES" value="" />
@@ -115,8 +115,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests in test_CRUD.py" />
         <item itemvalue="Python.APP" />
+        <item itemvalue="Python tests.Python tests in test_CRUD.py" />
       </list>
     </recent_temporary>
   </component>

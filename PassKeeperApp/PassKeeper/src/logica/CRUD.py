@@ -121,20 +121,24 @@ class Contraseniacrud:
     def editar_contrasena(
             self, id_contrasenia, contrasenia_encriptada=None, nota=None, servicio=None, usuario=None
     ):
-        """Actualizar los campos de una contrasenia"""
+        """Actualizar los campos de una contraseña"""
         contrasenia = self.session.query(Contrasenia).filter_by(id_contrasenia=id_contrasenia).first()
         if not contrasenia:
             raise Exception("La contraseña no existe")
 
-        # Actualizar los campos solo si se proporcionan nuevos valores
+        # Validar y asignar servicio
+        if servicio:
+            if not isinstance(servicio, str):
+                raise Exception("El servicio debe ser un texto.")
+            contrasenia.servicio = servicio
+
+        # Actualizar los demás campos si se proporcionan nuevos valores
         if contrasenia_encriptada:
             contrasenia.contrasenia_encriptada = contrasenia_encriptada
         if nota:
             contrasenia.nota = nota
-        if servicio:
-            contrasenia.servicio = servicio
         if usuario:
-            contrasenia.usuario = usuario
+            contrasenia.nombre_usuario_servicio = usuario
 
         contrasenia.ultima_modificacion = datetime.now()
         self.session.commit()
